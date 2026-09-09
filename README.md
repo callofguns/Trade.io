@@ -23,6 +23,15 @@ Or run the engine on its own, printing to the terminal:
 npm start
 ```
 
+## Deploying
+
+`web/bundle.js` is built from `web/app.ts`, so it isn't committed. GitHub Pages
+doesn't run builds, so `.github/workflows/pages.yml` builds it on every push to
+`main` and publishes the `web/` folder as the site root.
+
+This needs Pages set to build from Actions: **Settings -> Pages -> Build and
+deployment -> Source: GitHub Actions**.
+
 ## How it's put together
 
 ```
