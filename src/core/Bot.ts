@@ -20,19 +20,46 @@ export abstract class Bot {
   constructor(public player: Player) {}
   abstract act(world: WorldSnapshot): void;
 
-  /** Shared card-trading behavior every personality can reuse (with a different appetite). */
-  protected tradeCards(world: WorldSnapshot, buyChance: number, sellChance: number): void {
+  /**
+   * Shared card-trading behavior every personality can reuse, dialed by a
+   * different appetite per personality. `bidMultiple` is how far above (or
+   * below) market price this bot is willing to bid in an auction.
+   */
+  protected tradeCards(
+    world: WorldSnapshot,
+    buyChance: number,
+    sellChance: number,
+    bidMultiple: number
+  ): void {
     for (const listing of world.auctionHouse.getListings()) {
-      if (listing.kind !== "fixed" || listing.sellerId === this.player.id) continue;
-      if (this.player.cash >= listing.price && Math.random() < buyChance) {
-        world.auctionHouse.buyFixed(this.player, listing.id);
+      if (listing.sellerId === this.player.id) continue;
+
+      if (listing.kind === "fixed") {
+        if (this.player.cash >= listing.price && Math.random() < buyChance) {
+          world.auctionHouse.buyFixed(this.player, listing.id);
+        }
+        continue;
+      }
+
+      // Open auction: bid market price x this bot's appetite, if it can afford it.
+      if (Math.random() < buyChance * 0.6) {
+        const bid = world.priceEngine.getPrice(listing.cardTypeId) * bidMultiple;
+        if (bid >= listing.minBid && this.player.cash >= bid) {
+          world.auctionHouse.placeBid(this.player, listing.id, bid);
+        }
       }
     }
 
     if (this.player.cards.length > 0 && Math.random() < sellChance) {
       const card = this.player.cards[Math.floor(Math.random() * this.player.cards.length)];
       const price = world.priceEngine.getPrice(card.typeId);
-      world.auctionHouse.listFixedPrice(this.player, card, price);
+      // Most sales are quick fixed-price flips; sometimes it's worth running
+      // an auction and letting bidders fight over it.
+      if (Math.random() < 0.35) {
+        world.auctionHouse.listForAuction(this.player, card, price * 0.8, world.currentTick + 5);
+      } else {
+        world.auctionHouse.listFixedPrice(this.player, card, price);
+      }
     }
   }
 }
@@ -48,7 +75,7 @@ export class AggressiveBot extends Bot {
         world.stockMarket.buyShares(this.player, company, Math.max(1, Math.floor(affordableQty * 0.5)));
       }
     }
-    this.tradeCards(world, /* buyChance */ 0.5, /* sellChance */ 0.03);
+    this.tradeCards(world, /* buyChance */ 0.5, /* sellChance */ 0.05, /* bidMultiple */ 1.15);
   }
 }
 
@@ -78,6 +105,6 @@ export class CautiousBot extends Bot {
         }
       }
     }
-    this.tradeCards(world, /* buyChance */ 0.15, /* sellChance */ 0.08);
+    this.tradeCards(world, /* buyChance */ 0.15, /* sellChance */ 0.1, /* bidMultiple */ 0.92);
   }
 }

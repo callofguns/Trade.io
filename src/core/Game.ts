@@ -2,6 +2,7 @@ import { PriceEngine } from "./Market.js";
 import { Player } from "./Player.js";
 import { StockMarket } from "./StockMarket.js";
 import { AuctionHouse } from "./AuctionHouse.js";
+import { TradeLog } from "./Events.js";
 import { type CardType, createCardInstance } from "./Card.js";
 import type { Company } from "./Company.js";
 import type { Bot } from "./Bot.js";
@@ -14,14 +15,15 @@ import type { Bot } from "./Bot.js";
 export class Game {
   readonly priceEngine = new PriceEngine();
   readonly players = new Map<string, Player>();
-  readonly stockMarket = new StockMarket(this.priceEngine);
+  readonly log = new TradeLog();
+  readonly stockMarket = new StockMarket(this.priceEngine, this.log);
   readonly auctionHouse: AuctionHouse;
   readonly cardTypes: CardType[] = [];
   readonly bots: Bot[] = [];
   currentTick = 0;
 
   constructor() {
-    this.auctionHouse = new AuctionHouse(this.priceEngine, this.players);
+    this.auctionHouse = new AuctionHouse(this.priceEngine, this.players, this.log);
   }
 
   addPlayer(player: Player): void {
@@ -49,6 +51,7 @@ export class Game {
   /** Advance the world by one step. */
   tick(): void {
     this.currentTick += 1;
+    this.log.setTick(this.currentTick);
     for (const bot of this.bots) {
       try {
         bot.act({

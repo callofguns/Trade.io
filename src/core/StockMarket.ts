@@ -1,5 +1,6 @@
 import type { PriceEngine } from "./Market.js";
 import type { Player } from "./Player.js";
+import type { TradeLog } from "./Events.js";
 import { type Company, createCompanyId } from "./Company.js";
 
 const SHARES_PER_COMPANY = 1000;
@@ -17,7 +18,10 @@ const SHARES_PER_COMPANY = 1000;
 export class StockMarket {
   private companies = new Map<string, Company>();
 
-  constructor(private priceEngine: PriceEngine) {}
+  constructor(
+    private priceEngine: PriceEngine,
+    private log?: TradeLog
+  ) {}
 
   /** Founding a company costs `foundingCost` cash, which also sets share 1's price. */
   foundCompany(founder: Player, name: string, foundingCost: number): Company {
@@ -34,8 +38,17 @@ export class StockMarket {
       totalShares: SHARES_PER_COMPANY,
     };
     this.companies.set(company.id, company);
-    this.priceEngine.register(company.id, foundingCost / SHARES_PER_COMPANY);
+    const startingPrice = foundingCost / SHARES_PER_COMPANY;
+    this.priceEngine.register(company.id, startingPrice);
     founder.addShares(company.id, SHARES_PER_COMPANY);
+
+    this.log?.record({
+      kind: "company-founded",
+      actorId: founder.id,
+      assetId: company.id,
+      quantity: SHARES_PER_COMPANY,
+      price: startingPrice,
+    });
     return company;
   }
 
@@ -50,6 +63,7 @@ export class StockMarket {
     buyer.cash -= cost;
     buyer.addShares(company.id, quantity);
     this.priceEngine.recordTrade(company.id, "buy", quantity, 100);
+    this.log?.record({ kind: "stock-buy", actorId: buyer.id, assetId: company.id, quantity, price });
   }
 
   sellShares(seller: Player, company: Company, quantity: number): void {
@@ -58,6 +72,11 @@ export class StockMarket {
     seller.removeShares(company.id, quantity);
     seller.cash += price * quantity;
     this.priceEngine.recordTrade(company.id, "sell", quantity, 100);
+    this.log?.record({ kind: "stock-sell", actorId: seller.id, assetId: company.id, quantity, price });
+  }
+
+  getCompany(companyId: string): Company | undefined {
+    return this.companies.get(companyId);
   }
 
   getCompanies(): Company[] {

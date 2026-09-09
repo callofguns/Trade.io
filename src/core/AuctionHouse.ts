@@ -1,5 +1,6 @@
 import type { PriceEngine } from "./Market.js";
 import type { Player } from "./Player.js";
+import type { TradeLog } from "./Events.js";
 import type { CardInstance } from "./Card.js";
 
 interface FixedListing {
@@ -41,7 +42,8 @@ export class AuctionHouse {
 
   constructor(
     private priceEngine: PriceEngine,
-    private players: Map<string, Player>
+    private players: Map<string, Player>,
+    private log?: TradeLog
   ) {}
 
   listFixedPrice(seller: Player, card: CardInstance, price: number): string {
@@ -56,6 +58,7 @@ export class AuctionHouse {
       sellerId: seller.id,
       price,
     });
+    this.log?.record({ kind: "card-listed", actorId: seller.id, assetId: card.typeId, quantity: 1, price });
     return id;
   }
 
@@ -73,6 +76,7 @@ export class AuctionHouse {
       closesAtTick,
       bids: [],
     });
+    this.log?.record({ kind: "card-listed", actorId: seller.id, assetId: card.typeId, quantity: 1, price: minBid });
     return id;
   }
 
@@ -89,6 +93,13 @@ export class AuctionHouse {
     buyer.addCard({ id: listing.cardInstanceId, typeId: listing.cardTypeId });
 
     this.priceEngine.recordTrade(listing.cardTypeId, "buy", 1);
+    this.log?.record({
+      kind: "card-sold",
+      actorId: buyer.id,
+      assetId: listing.cardTypeId,
+      quantity: 1,
+      price: listing.price,
+    });
     this.listings.delete(listingId);
   }
 
@@ -118,6 +129,13 @@ export class AuctionHouse {
           seller.cash += winner.amount;
           buyer.addCard({ id: listing.cardInstanceId, typeId: listing.cardTypeId });
           this.priceEngine.recordTrade(listing.cardTypeId, "buy", 1);
+          this.log?.record({
+            kind: "card-sold",
+            actorId: buyer.id,
+            assetId: listing.cardTypeId,
+            quantity: 1,
+            price: winner.amount,
+          });
         }
       } else {
         // No bids came in - card goes back to the seller, unsold.
@@ -126,6 +144,10 @@ export class AuctionHouse {
       }
       this.listings.delete(listing.id);
     }
+  }
+
+  getListing(listingId: string): Listing | undefined {
+    return this.listings.get(listingId);
   }
 
   getListings(): Listing[] {

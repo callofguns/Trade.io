@@ -6,12 +6,15 @@
   "description": "Multiplayer trading game - card auction house + player-founded stock market, driven by a live price engine and bots.",
   "scripts": {
     "start": "tsx src/main.ts",
+    "web": "npm run build:web && node scripts/serve.mjs",
+    "build:web": "esbuild web/app.ts --bundle --format=esm --target=es2020 --outfile=web/bundle.js",
     "typecheck": "tsc --noEmit",
     "build": "tsc"
   },
   "devDependencies": {
     "typescript": "^5.6.3",
     "tsx": "^4.19.2",
-    "@types/node": "^22.9.0"
+    "@types/node": "^22.9.0",
+    "esbuild": "^0.24.0"
   }
 }

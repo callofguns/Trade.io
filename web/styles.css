@@ -1,0 +1,731 @@
+/* ==========================================================================
+   Trade.io - design tokens
+   Direction: "share certificate". Deep petrol ground (felt on a card table
+   under a lamp), warm bone type, brass as the colour of money. Brass doubles
+   as the legendary rarity, because in this game legendary cards are money.
+   ========================================================================== */
+
+:root {
+  /* --- Ground & surface ramp (night, the default) --- */
+  --ink:        #0A1618;
+  --ink-lift:   #102124;
+  --ink-raise:  #162B2F;
+  --ink-edge:   #1E3A3F;
+  --ink-hair:   #2A4C52;
+
+  /* --- Ink on ground --- */
+  --bone:       #EDE4D3;   /* 15.1:1 on --ink  */
+  --bone-dim:   #9FB0AE;   /* 7.4:1  on --ink  */
+  --bone-mute:  #6E817F;   /* 4.6:1  on --ink  */
+
+  /* --- Brass: currency, legendary, focus. The one warm accent. --- */
+  --brass:      #D3A94F;
+  --brass-deep: #8A6C24;
+  --brass-wash: rgba(211, 169, 79, 0.12);
+
+  /* --- Semantic: direction of price. Never used alone; always paired
+         with a glyph and a sign, so colour is never the only signal. --- */
+  --jade:       #3ECF8E;   /* up   */
+  --jade-wash:  rgba(62, 207, 142, 0.14);
+  --ember:      #F0644E;   /* down */
+  --ember-wash: rgba(240, 100, 78, 0.14);
+
+  /* --- Rarity is data, not decoration. Each tier gets a fixed hue. --- */
+  --common:     #8795A0;
+  --rare:       #6AA6F0;
+  --legendary:  var(--brass);
+
+  /* --- Type --- */
+  --face-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --face-ui: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --face-num: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --t-display:  clamp(1.75rem, 7vw, 2.5rem);
+  --t-title:    1.25rem;
+  --t-body:     1rem;      /* 16px floor - stops iOS zooming on focus */
+  --t-label:    0.8125rem;
+  --t-micro:    0.6875rem;
+
+  --t-price-lg: clamp(1.75rem, 6.5vw, 2.25rem);
+  --t-price:    1.0625rem;
+
+  /* --- Space scale (4pt) --- */
+  --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
+  --s5: 20px; --s6: 24px; --s7: 32px; --s8: 40px;
+
+  --r-card: 14px;
+  --r-sheet: 22px;
+  --r-chip: 999px;
+
+  /* --- Motion. Everything under 300ms; nothing animates layout. --- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-tap: 110ms;
+  --dur-ui: 180ms;
+  --dur-sheet: 280ms;
+
+  --scrim: rgba(3, 8, 9, 0.74);
+  --tap: 44px;             /* minimum touch target */
+}
+
+/* Day market: a genuine second design, not an inversion. Parchment ground,
+   petrol ink. Same brass, same rarity hues, re-tuned for contrast. */
+[data-theme="day"] {
+  --ink:        #F2EBDB;
+  --ink-lift:   #FBF6EA;
+  --ink-raise:  #FFFFFF;
+  --ink-edge:   #DFD3BB;
+  --ink-hair:   #C9B995;
+
+  --bone:       #14282B;
+  --bone-dim:   #46605F;
+  --bone-mute:  #66807E;
+
+  --brass:      #8A6C24;
+  --brass-deep: #5C4614;
+  --brass-wash: rgba(138, 108, 36, 0.12);
+
+  --jade:       #0E7A4E;
+  --jade-wash:  rgba(14, 122, 78, 0.12);
+  --ember:      #C0392B;
+  --ember-wash: rgba(192, 57, 43, 0.12);
+
+  --common:     #5C6A73;
+  --rare:       #1E5FAE;
+  --legendary:  var(--brass);
+
+  --scrim: rgba(46, 34, 14, 0.42);
+}
+
+/* Windows high-contrast / forced colours and prefers-contrast */
+@media (prefers-contrast: more) {
+  :root {
+    --bone-mute: var(--bone-dim);
+    --ink-edge: var(--ink-hair);
+  }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--bone);
+  font: 400 var(--t-body)/1.5 var(--face-ui);
+  -webkit-font-smoothing: antialiased;
+  /* Room for the fixed tab bar so content never hides behind it. */
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  overscroll-behavior-y: none;
+}
+
+h1, h2, h3 { margin: 0; font-family: var(--face-display); font-weight: 700; line-height: 1.15; }
+
+button { font: inherit; color: inherit; background: none; border: 0; margin: 0; cursor: pointer; }
+
+/* One focus treatment everywhere: a brass ring, always visible on keyboard. */
+:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.skip {
+  position: absolute; left: var(--s4); top: -100px; z-index: 100;
+  padding: var(--s3) var(--s4); background: var(--brass); color: #12100A;
+  border-radius: 8px; font-weight: 700; text-decoration: none;
+  transition: top var(--dur-ui) var(--ease-out);
+}
+.skip:focus { top: var(--s4); }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Numerals are tabular everywhere, so digits never jitter as prices tick. */
+.num {
+  font-family: var(--face-num);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.eyebrow {
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+}
+
+/* ==========================================================================
+   Top bar - net worth is the one number that matters, so it leads
+   ========================================================================== */
+
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  padding: calc(var(--s3) + env(safe-area-inset-top)) var(--s4) 0;
+  background: linear-gradient(var(--ink) 72%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.topbar__row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s3);
+}
+
+.wordmark {
+  font-family: var(--face-display);
+  font-size: var(--t-label);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brass);
+}
+
+.icon-btn {
+  display: grid; place-items: center;
+  width: var(--tap); height: var(--tap);
+  margin-right: calc(var(--s3) * -1);
+  border-radius: var(--r-chip);
+  color: var(--bone-dim);
+  transition: transform var(--dur-tap) var(--ease-out), color var(--dur-ui);
+}
+.icon-btn:active { transform: scale(0.9); color: var(--bone); }
+
+.networth { margin-top: var(--s2); }
+.networth__value { font-size: var(--t-price-lg); line-height: 1.1; display: block; }
+.networth__meta {
+  display: flex; align-items: baseline; gap: var(--s3);
+  margin-top: var(--s1); font-size: var(--t-label); color: var(--bone-dim);
+}
+
+/* The tape: a swipeable rail of what just moved. Scrollable, never an
+   auto-marquee - motion the reader can't stop is a usability tax. */
+.tape {
+  display: flex; gap: var(--s2);
+  margin: var(--s3) calc(var(--s4) * -1) 0;
+  padding: 0 var(--s4) var(--s3);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.tape::-webkit-scrollbar { display: none; }
+
+.tape__chip {
+  flex: 0 0 auto;
+  display: flex; align-items: center; gap: var(--s2);
+  padding: var(--s2) var(--s3);
+  border: 1px solid var(--ink-edge);
+  border-radius: var(--r-chip);
+  background: var(--ink-lift);
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  white-space: nowrap;
+}
+.tape__chip .num { font-size: var(--t-micro); }
+.tape__chip[data-dir="up"] .num { color: var(--jade); }
+.tape__chip[data-dir="down"] .num { color: var(--ember); }
+
+/* ==========================================================================
+   Views
+   ========================================================================== */
+
+.view { display: none; padding: var(--s4) var(--s4) var(--s7); }
+.view[data-active="true"] { display: block; }
+
+.view__head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: var(--s3); margin-bottom: var(--s4);
+}
+.view__title { font-size: var(--t-title); }
+.view__note { font-size: var(--t-label); color: var(--bone-mute); }
+
+.stack { display: grid; gap: var(--s3); }
+
+/* ==========================================================================
+   The certificate - the signature component.
+   One component renders both a company share and a collectible card, because
+   both are the same thing to the price engine. Foil edge carries rarity (or
+   brass, for a company). Sparkline is engraved across the face.
+   ========================================================================== */
+
+.cert {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  min-height: 80px;
+  padding: var(--s4) var(--s4) var(--s4) var(--s5);
+  text-align: left;
+  background: var(--ink-lift);
+  border: 1px solid var(--ink-edge);
+  border-radius: var(--r-card);
+  overflow: hidden;
+  transition: transform var(--dur-tap) var(--ease-out),
+              border-color var(--dur-ui) var(--ease-out),
+              background-color var(--dur-ui) var(--ease-out);
+}
+
+/* Foil edge: the rarity signal, plus a redundant text label below so the
+   colour is never doing the work alone. */
+.cert::before {
+  content: "";
+  position: absolute; inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--foil, var(--brass));
+}
+
+.cert:active { transform: scale(0.985); background: var(--ink-raise); }
+@media (hover: hover) {
+  .cert:hover { border-color: var(--ink-hair); }
+}
+
+.cert__main { min-width: 0; display: grid; gap: 2px; align-content: center; }
+
+.cert__name {
+  font-family: var(--face-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.cert__meta {
+  display: flex; align-items: center; gap: var(--s2);
+  min-width: 0;
+  font-size: var(--t-micro);
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+  color: var(--bone-mute);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.cert__meta > span { overflow: hidden; text-overflow: ellipsis; }
+/* Rarity outranks the second fact, so it never truncates - if space runs
+   out, the listing count ellipses instead. */
+.cert__rarity { color: var(--foil, var(--brass)); font-weight: 700; flex: 0 0 auto; }
+.cert__dot { opacity: 0.45; flex: 0 0 auto; }
+
+.cert__side {
+  display: grid; gap: var(--s1);
+  justify-items: end; align-content: center;
+}
+
+.cert__spark { display: grid; place-items: center; }
+
+.cert__price { font-size: var(--t-price); display: block; position: relative; }
+
+.cert__delta {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-family: var(--face-num);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  padding: 2px var(--s2);
+  border-radius: var(--r-chip);
+}
+.cert__delta[data-dir="up"]   { color: var(--jade);  background: var(--jade-wash); }
+.cert__delta[data-dir="down"] { color: var(--ember); background: var(--ember-wash); }
+.cert__delta[data-dir="flat"] { color: var(--bone-mute); background: transparent; }
+
+.spark { display: block; width: 46px; height: 22px; overflow: visible; opacity: 0.9; }
+.spark path { fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Price flash: the standard trading-floor cue for "this one just moved".
+   Runs on an overlay so it never triggers layout. */
+.cert__price::after {
+  content: "";
+  position: absolute; inset: -4px -6px;
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+}
+.cert__price[data-flash="up"]::after   { animation: flash var(--dur-ui) var(--ease-out); background: var(--jade-wash); }
+.cert__price[data-flash="down"]::after { animation: flash var(--dur-ui) var(--ease-out); background: var(--ember-wash); }
+@keyframes flash { from { opacity: 1; } to { opacity: 0; } }
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--s2);
+  min-height: var(--tap);
+  padding: 0 var(--s5);
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: var(--t-body);
+  letter-spacing: 0.01em;
+  transition: transform var(--dur-tap) var(--ease-out),
+              background-color var(--dur-ui), opacity var(--dur-ui);
+}
+.btn:active { transform: scale(0.97); }
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn--buy    { background: var(--jade);  color: #04150D; }
+.btn--sell   { background: var(--ember); color: #1A0603; }
+.btn--brass  { background: var(--brass); color: #12100A; }
+.btn--quiet  { background: var(--ink-raise); color: var(--bone); border: 1px solid var(--ink-edge); }
+.btn--block  { width: 100%; }
+
+/* Founding a company sits at the end of the market list - it *is* how you
+   add to this market, so it belongs here, not behind a floating button. */
+.found-cta {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s4);
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--s4) var(--s5);
+  margin-top: var(--s2);
+  text-align: left;
+  border: 1px dashed var(--ink-hair);
+  border-radius: var(--r-card);
+  color: var(--bone-dim);
+  transition: transform var(--dur-tap) var(--ease-out), border-color var(--dur-ui), color var(--dur-ui);
+}
+.found-cta:active { transform: scale(0.985); }
+.found-cta strong { display: block; color: var(--bone); font-family: var(--face-display); font-size: 1rem; }
+.found-cta span { font-size: var(--t-label); }
+
+/* ==========================================================================
+   Rows: holdings + activity
+   ========================================================================== */
+
+.row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--ink-edge);
+}
+.row:last-child { border-bottom: 0; }
+.row__label { min-width: 0; }
+.row__name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row__sub { font-size: var(--t-label); color: var(--bone-mute); }
+.row__value { text-align: right; white-space: nowrap; }
+
+.feed { display: grid; gap: 0; }
+.feed__item {
+  display: grid; grid-template-columns: 22px 1fr auto; gap: var(--s3);
+  align-items: baseline;
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--ink-edge);
+  font-size: var(--t-label);
+}
+.feed__glyph { font-family: var(--face-num); font-size: var(--t-micro); text-align: center; }
+.feed__item[data-dir="up"] .feed__glyph { color: var(--jade); }
+.feed__item[data-dir="down"] .feed__glyph { color: var(--ember); }
+.feed__item[data-dir="new"] .feed__glyph { color: var(--brass); }
+.feed__text { color: var(--bone-dim); }
+.feed__text b { color: var(--bone); font-weight: 500; }
+.feed__amount { font-size: var(--t-micro); color: var(--bone-mute); }
+
+.empty {
+  padding: var(--s5) var(--s4);
+  text-align: center;
+  font-size: var(--t-label);
+  line-height: 1.45;
+  color: var(--bone-mute);
+  border: 1px dashed var(--ink-edge);
+  border-radius: var(--r-card);
+}
+.empty strong {
+  display: block;
+  max-width: 30ch;
+  margin: 0 auto var(--s1);
+  color: var(--bone);
+  font-family: var(--face-display);
+  font-size: 1rem;
+}
+
+/* Skeletons for first paint - shape of the content, not a spinner. */
+.skeleton {
+  height: 88px;
+  border-radius: var(--r-card);
+  background: linear-gradient(100deg, var(--ink-lift) 30%, var(--ink-raise) 50%, var(--ink-lift) 70%);
+  background-size: 220% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer { from { background-position: 180% 0; } to { background-position: -40% 0; } }
+
+/* ==========================================================================
+   Tab bar - 4 destinations, thumb zone, safe-area aware
+   ========================================================================== */
+
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  gap: var(--s2);
+  padding: var(--s2) var(--s3) calc(var(--s2) + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--ink) 88%, transparent);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--ink-edge);
+}
+
+.tab {
+  display: grid; justify-items: center; gap: 3px;
+  min-height: var(--tap);
+  padding: var(--s2) var(--s1);
+  border-radius: 10px;
+  color: var(--bone-mute);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color var(--dur-ui) var(--ease-out), transform var(--dur-tap) var(--ease-out);
+}
+.tab:active { transform: scale(0.94); }
+.tab svg { width: 22px; height: 22px; }
+.tab[aria-current="page"] { color: var(--brass); }
+
+/* ==========================================================================
+   Bottom sheet - where every trade happens
+   ========================================================================== */
+
+.scrim {
+  position: fixed; inset: 0; z-index: 40;
+  background: var(--scrim);
+  opacity: 0;
+  transition: opacity var(--dur-sheet) var(--ease-out);
+}
+.scrim[data-open="true"] { opacity: 1; }
+
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: var(--s2) var(--s5) calc(var(--s6) + env(safe-area-inset-bottom));
+  background: var(--ink-lift);
+  border-top: 1px solid var(--ink-hair);
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  transform: translateY(101%);
+  transition: transform var(--dur-sheet) var(--ease-out);
+}
+.sheet[data-open="true"] { transform: translateY(0); }
+
+/* Guilloché wash - the engraved-certificate detail, used once, on the one
+   surface that earns it. */
+.sheet::before {
+  content: "";
+  position: absolute; inset: 0 0 auto 0; height: 140px;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: repeating-radial-gradient(circle at 50% -30%, transparent 0 3px, var(--brass) 3px 3.6px);
+}
+
+.sheet__grip {
+  width: 36px; height: 4px; margin: var(--s2) auto var(--s4);
+  border-radius: var(--r-chip);
+  background: var(--ink-hair);
+}
+
+.sheet__head { position: relative; margin-bottom: var(--s5); }
+.sheet__title { font-size: var(--t-title); }
+.sheet__sub { margin-top: 3px; font-size: var(--t-label); color: var(--bone-mute); }
+.sheet__sub--rarity {
+  font-size: var(--t-micro); font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.sheet__price { display: flex; align-items: baseline; gap: var(--s3); margin-top: var(--s3); }
+.sheet__price .num { font-size: var(--t-price-lg); }
+
+.sheet__section { margin-bottom: var(--s5); }
+.sheet__section > .eyebrow { display: block; margin-bottom: var(--s3); }
+
+/* Quantity stepper: 44px targets, 8px apart, mono readout */
+.stepper {
+  display: grid; grid-template-columns: var(--tap) 1fr var(--tap);
+  align-items: center; gap: var(--s2);
+  padding: var(--s1);
+  background: var(--ink);
+  border: 1px solid var(--ink-edge);
+  border-radius: 12px;
+}
+.stepper button {
+  width: var(--tap); height: var(--tap);
+  display: grid; place-items: center;
+  border-radius: 9px;
+  font-size: 1.25rem;
+  color: var(--bone);
+  transition: transform var(--dur-tap) var(--ease-out), background-color var(--dur-ui);
+}
+.stepper button:active { transform: scale(0.9); background: var(--ink-raise); }
+.stepper input {
+  width: 100%; min-height: var(--tap);
+  border: 0; background: none; color: var(--bone);
+  text-align: center;
+  font-family: var(--face-num); font-variant-numeric: tabular-nums;
+  font-size: 1.125rem; font-weight: 600;
+}
+.stepper input:focus { outline: none; }
+.stepper:focus-within { border-color: var(--brass); }
+
+.quick { display: flex; gap: var(--s2); margin-top: var(--s3); }
+.quick button {
+  flex: 1; min-height: var(--tap);
+  border: 1px solid var(--ink-edge); border-radius: 10px;
+  background: var(--ink);
+  font-size: var(--t-label); font-weight: 700; color: var(--bone-dim);
+  transition: transform var(--dur-tap) var(--ease-out), color var(--dur-ui), border-color var(--dur-ui);
+}
+.quick button:active { transform: scale(0.95); color: var(--bone); border-color: var(--brass); }
+
+.field { display: grid; gap: var(--s2); }
+.field label { font-size: var(--t-label); font-weight: 500; color: var(--bone-dim); }
+.field input {
+  min-height: var(--tap);
+  padding: 0 var(--s4);
+  background: var(--ink);
+  border: 1px solid var(--ink-edge);
+  border-radius: 12px;
+  color: var(--bone);
+  font: 400 var(--t-body) var(--face-ui);
+  transition: border-color var(--dur-ui) var(--ease-out);
+}
+.field input:focus { outline: none; border-color: var(--brass); }
+.field input[aria-invalid="true"] { border-color: var(--ember); }
+.field__hint { font-size: var(--t-label); color: var(--bone-mute); min-height: 1.4em; }
+.field__hint[data-state="error"] { color: var(--ember); }
+
+.preview {
+  display: grid; gap: var(--s2);
+  padding: var(--s4);
+  background: var(--ink);
+  border: 1px solid var(--ink-edge);
+  border-radius: 12px;
+  font-size: var(--t-label);
+}
+.preview__line { display: flex; justify-content: space-between; gap: var(--s3); color: var(--bone-dim); }
+.preview__line strong { color: var(--bone); font-weight: 500; }
+.preview__line--total { padding-top: var(--s2); border-top: 1px solid var(--ink-edge); }
+
+.actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: var(--s3); }
+
+.listing {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--s3);
+  margin-bottom: var(--s2);
+  text-align: left;
+  background: var(--ink);
+  border: 1px solid var(--ink-edge);
+  border-radius: 12px;
+  transition: transform var(--dur-tap) var(--ease-out), border-color var(--dur-ui);
+}
+.listing:active { transform: scale(0.98); border-color: var(--brass); }
+.listing__who { font-size: var(--t-label); color: var(--bone-dim); }
+.listing__tag {
+  font-size: var(--t-micro); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--brass);
+}
+
+/* Trade confirmation: a check that draws itself, then the sheet closes. */
+.done { display: grid; justify-items: center; gap: var(--s3); padding: var(--s7) 0 var(--s6); text-align: center; }
+.done svg { width: 56px; height: 56px; }
+.done circle { fill: none; stroke: var(--jade); stroke-width: 2; opacity: 0.35; }
+.done path {
+  fill: none; stroke: var(--jade); stroke-width: 3;
+  stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 32; stroke-dashoffset: 32;
+  animation: draw 260ms var(--ease-out) forwards;
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.done__title { font-family: var(--face-display); font-size: var(--t-title); }
+.done__sub { font-size: var(--t-label); color: var(--bone-dim); }
+
+/* Toast: confirmation that survives the sheet closing. */
+.toast {
+  position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 60;
+  display: flex; align-items: center; gap: var(--s2);
+  max-width: min(92vw, 420px);
+  padding: var(--s3) var(--s4);
+  background: var(--ink-raise);
+  border: 1px solid var(--ink-hair);
+  border-radius: var(--r-chip);
+  font-size: var(--t-label);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+  opacity: 0;
+  transform: translate(-50%, 12px);
+  pointer-events: none;
+  transition: opacity var(--dur-ui) var(--ease-out), transform var(--dur-ui) var(--ease-out);
+}
+.toast[data-open="true"] { opacity: 1; transform: translate(-50%, 0); }
+.toast[data-tone="error"] { border-color: var(--ember); }
+
+/* ==========================================================================
+   Breakpoints. Mobile is the design; wider screens get more of it side by
+   side rather than a stretched phone layout.
+   ========================================================================== */
+
+/* Tablet: 768px+ */
+@media (min-width: 768px) {
+  .topbar, .view { max-width: 720px; margin-inline: auto; }
+  .spark { width: 68px; }
+  .stack { grid-template-columns: repeat(2, 1fr); }
+  .found-cta { grid-column: 1 / -1; }
+  .sheet {
+    left: 50%; right: auto; bottom: 0;
+    width: min(560px, 100%);
+    transform: translate(-50%, 101%);
+    border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  }
+  .sheet[data-open="true"] { transform: translate(-50%, 0); }
+}
+
+/* Desktop: 1024px+. Tab bar moves to a rail so the thumb zone isn't wasted
+   on a pointer device, and the whole scale steps up - a phone layout stretched
+   across a monitor reads as an afterthought. */
+@media (min-width: 1024px) {
+  :root { --t-price: 1.25rem; --t-title: 1.75rem; }
+  body { padding-bottom: 0; padding-left: 96px; }
+  .cert { min-height: 100px; padding: var(--s5) var(--s5) var(--s5) var(--s6); gap: var(--s5); }
+  .cert__name { font-size: 1.25rem; }
+  .cert__meta { font-size: 0.75rem; }
+  .spark { width: 96px; height: 30px; }
+  .networth__value { font-size: 2.75rem; }
+  .tabbar {
+    top: 0; right: auto; bottom: 0;
+    width: 96px;
+    grid-auto-flow: row;
+    grid-auto-rows: max-content;
+    align-content: start;
+    gap: var(--s3);
+    padding: var(--s7) var(--s3);
+    border-top: 0;
+    border-right: 1px solid var(--ink-edge);
+  }
+  .topbar, .view { max-width: 900px; }
+  .toast { bottom: var(--s6); left: calc(50% + 48px); }
+}
+
+/* Large screens: 1400px+ */
+@media (min-width: 1400px) {
+  .topbar, .view { max-width: 1080px; }
+  .stack { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ==========================================================================
+   Reduced motion: every animation here is feedback, not information, so all
+   of it can go. State still changes instantly and visibly.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .skeleton { animation: none; background: var(--ink-lift); }
+}
