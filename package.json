@@ -1,0 +1,17 @@
+{
+  "name": "trade-io",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Multiplayer trading game - card auction house + player-founded stock market, driven by a live price engine and bots.",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "tsx": "^4.19.2",
+    "@types/node": "^22.9.0"
+  }
+}
